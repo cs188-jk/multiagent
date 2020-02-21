@@ -166,8 +166,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
         for action in actions:
             successor = gameState.generateSuccessor(agentIndex, action)
 
-            score = v
-
             if not successor.isWin() and not successor.isLose():
                 if(agentIndex < gameState.getNumAgents() - 1):
                     score = self.minHelper(successor, layerDepth, agentIndex+1)
@@ -214,8 +212,72 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
+        score, action = self.maxHelper(gameState, self.depth, -math.inf, math.inf)
+        return action
         util.raiseNotDefined()
+
+    def minHelper(self, gameState, layerDepth, agentIndex, alpha, beta):
+        v = math.inf
+
+
+        if gameState.isWin() or gameState.isLose():
+            score = self.evaluationFunction(gameState)
+            return score
+
+        actions = gameState.getLegalActions(agentIndex)
+
+        for action in actions:
+            successor = gameState.generateSuccessor(agentIndex, action)
+
+            if not successor.isWin() and not successor.isLose():
+                if(agentIndex < gameState.getNumAgents() - 1):
+                    score = self.minHelper(successor, layerDepth, agentIndex+1, alpha, beta)
+                else:
+                    score, action = self.maxHelper(successor, layerDepth - 1, alpha, beta)
+            else:
+                score = self.evaluationFunction(successor)
+
+            #print('Depth: ', layerDepth, ' MinLayer, Score: ', score , 'alpha: ', alpha, 'beta: ', beta)
+
+            if score < v:
+                v = score
+
+            if score < alpha:
+                return score
+
+            beta = min(beta, v)
+
+        return v
+
+    def maxHelper(self, gameState, layerDepth, alpha, beta):
+        v = -math.inf
+        maxAction = None
+
+        actions = gameState.getLegalActions(0)
+
+        if layerDepth == 0 or gameState.isWin() or gameState.isLose():
+            score = self.evaluationFunction(gameState)
+            return score, maxAction
+
+        for action in actions:
+            successor = gameState.generateSuccessor(0, action)
+
+            if not successor.isWin() and not successor.isLose():
+                score = self.minHelper(successor, layerDepth, 1, alpha, beta)
+            else:
+                score = self.evaluationFunction(successor)
+
+            #print('Depth: ', layerDepth, ' MaxLayer, Score: ', score , 'alpha: ', alpha, 'beta: ', beta)
+            if score > v:
+                v = score
+                maxAction = action
+
+            if v > beta:
+                return v, action
+
+            alpha = max(alpha, v)
+
+        return v, maxAction
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
